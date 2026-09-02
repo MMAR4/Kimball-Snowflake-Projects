@@ -1,0 +1,563 @@
+/*
+PROJECT-5
+Retail Sales Data Warehouse Design using Star Schema
+
+Topic: 4.1B – Star Schema
+-----------
+Problem Statement:
+------------------
+A multinational retail company has successfully completed the 
+dimensional modeling phase of its enterprise Data Warehouse. 
+The management now requires the design team to implement a Star 
+Schema that can efficiently support Business Intelligence (BI) and 
+Online Analytical Processing (OLAP) queries.
+
+The organization receives sales transactions daily from multiple 
+retail branches located across India. Business analysts frequently 
+generate reports such as Top Customers, Top Products, Monthly Revenue,
+Branch Performance, State-wise Sales, Category-wise Revenue, Customer 
+Purchase Trends, and Product Performance Dashboards.
+
+To improve query performance and simplify analytical reporting, the 
+Data Warehouse Architect has decided to organize the warehouse using 
+the Star Schema architecture.
+
+As a Data Warehouse Designer, your responsibility is to identify the 
+Fact Table, Dimension Tables, Primary Keys, Foreign Keys, measures, 
+and relationships, and then design a complete Star Schema capable of 
+supporting all required analytical reports.
+
+The organization provides the following datasets:
+customers.csv
+products.csv
+branches.csv
+calendar.csv
+sales.csv
+
+
+
+customers.csv:
+-------------
+customer_id,customer_name,city,state,membership
+1,Amit Sharma,Hyderabad,Telangana,Gold
+2,Priya Singh,Bangalore,Karnataka,Silver
+3,Rahul Verma,Chennai,Tamil Nadu,Gold
+4,Neha Patel,Ahmedabad,Gujarat,Silver
+5,Arjun Gupta,Delhi,Delhi,Platinum
+6,Kiran Kumar,Vijayawada,Andhra Pradesh,Gold
+7,Suresh Reddy,Warangal,Telangana,Silver
+8,Pooja Mehta,Mumbai,Maharashtra,Gold
+9,Rohit Jain,Jaipur,Rajasthan,Silver
+10,Divya Nair,Kochi,Kerala,Gold
+11,Mohan Rao,Visakhapatnam,Andhra Pradesh,Silver
+12,Anjali Das,Kolkata,West Bengal,Gold
+13,Naveen Yadav,Lucknow,Uttar Pradesh,Silver
+14,Sneha Iyer,Coimbatore,Tamil Nadu,Gold
+15,Rakesh Mishra,Patna,Bihar,Platinum
+16,Kavya Rani,Bhopal,Madhya Pradesh,Silver
+17,Varun Kapoor,Chandigarh,Chandigarh,Gold
+18,Swathi Rao,Mysore,Karnataka,Silver
+19,Nikhil Joshi,Nagpur,Maharashtra,Gold
+20,Meera Thomas,Thiruvananthapuram,Kerala,Platinum
+
+
+products.csv
+-------------
+product_id,product_name,category,brand,price
+101,Laptop,Electronics,Dell,65000
+102,Smartphone,Electronics,Samsung,28000
+103,Tablet,Electronics,Apple,45000
+104,Monitor,Electronics,LG,18000
+105,Smart Watch,Electronics,Apple,22000
+106,Keyboard,Accessories,Logitech,1800
+107,Mouse,Accessories,HP,900
+108,Headphones,Accessories,Sony,3500
+109,Speaker,Accessories,JBL,5500
+110,Web Camera,Accessories,Logitech,4200
+111,Printer,Office Equipment,HP,15000
+112,Scanner,Office Equipment,Canon,12000
+113,Projector,Office Equipment,Epson,48000
+114,Router,Networking,TP-Link,3200
+115,Network Switch,Networking,Cisco,12500
+116,External SSD,Storage,Samsung,9500
+117,Hard Disk,Storage,Seagate,6500
+118,USB Pen Drive,Storage,SanDisk,1200
+119,Power Bank,Mobile Accessories,Mi,1800
+120,Wireless Charger,Mobile Accessories,Anker,2500
+
+
+branches.csv
+--------------
+branch_id,branch_name,city,state,region,manager_name
+1,Hyderabad Central,Hyderabad,Telangana,South,Rajesh Kumar
+2,Bangalore Tech Park,Bangalore,Karnataka,South,Priya Nair
+3,Chennai City Mall,Chennai,Tamil Nadu,South,Suresh Reddy
+4,Mumbai Business Hub,Mumbai,Maharashtra,West,Anita Sharma
+5,Delhi Connaught Place,Delhi,Delhi,North,Rahul Verma
+6,Ahmedabad Plaza,Ahmedabad,Gujarat,West,Kiran Patel
+7,Kolkata City Center,Kolkata,West Bengal,East,Subhash Das
+8,Jaipur Pink Square,Jaipur,Rajasthan,North,Neha Gupta
+9,Kochi Metro Mall,Kochi,Kerala,South,Arun Thomas
+10,Lucknow Galleria,Lucknow,Uttar Pradesh,North,Vivek Mishra
+
+
+calendar.csv
+-----------
+date_id,date,day,day_name,week_no,month,quarter,year,is_weekend
+1,2026-07-01,1,Wednesday,27,July,Q3,2026,No
+2,2026-07-02,2,Thursday,27,July,Q3,2026,No
+3,2026-07-03,3,Friday,27,July,Q3,2026,No
+4,2026-07-04,4,Saturday,27,July,Q3,2026,Yes
+5,2026-07-05,5,Sunday,27,July,Q3,2026,Yes
+6,2026-07-06,6,Monday,28,July,Q3,2026,No
+7,2026-07-07,7,Tuesday,28,July,Q3,2026,No
+8,2026-07-08,8,Wednesday,28,July,Q3,2026,No
+9,2026-07-09,9,Thursday,28,July,Q3,2026,No
+10,2026-07-10,10,Friday,28,July,Q3,2026,No
+11,2026-07-11,11,Saturday,28,July,Q3,2026,Yes
+12,2026-07-12,12,Sunday,28,July,Q3,2026,Yes
+13,2026-07-13,13,Monday,29,July,Q3,2026,No
+14,2026-07-14,14,Tuesday,29,July,Q3,2026,No
+15,2026-07-15,15,Wednesday,29,July,Q3,2026,No
+16,2026-07-16,16,Thursday,29,July,Q3,2026,No
+17,2026-07-17,17,Friday,29,July,Q3,2026,No
+18,2026-07-18,18,Saturday,29,July,Q3,2026,Yes
+19,2026-07-19,19,Sunday,29,July,Q3,2026,Yes
+20,2026-07-20,20,Monday,30,July,Q3,2026,No
+21,2026-07-21,21,Tuesday,30,July,Q3,2026,No
+22,2026-07-22,22,Wednesday,30,July,Q3,2026,No
+23,2026-07-23,23,Thursday,30,July,Q3,2026,No
+24,2026-07-24,24,Friday,30,July,Q3,2026,No
+25,2026-07-25,25,Saturday,30,July,Q3,2026,Yes
+26,2026-07-26,26,Sunday,30,July,Q3,2026,Yes
+27,2026-07-27,27,Monday,31,July,Q3,2026,No
+28,2026-07-28,28,Tuesday,31,July,Q3,2026,No
+29,2026-07-29,29,Wednesday,31,July,Q3,2026,No
+30,2026-07-30,30,Thursday,31,July,Q3,2026,No
+31,2026-07-31,31,Friday,31,July,Q3,2026,No
+
+
+sales.csv
+------------
+sale_id,customer_id,product_id,branch_id,date_id,quantity,total_amount
+1,1,101,1,1,1,65000
+2,2,102,2,2,2,56000
+3,3,103,3,3,3,135000
+4,4,104,4,4,4,72000
+5,5,105,5,5,5,110000
+6,6,106,6,6,1,1800
+7,7,107,7,7,2,1800
+8,8,108,8,8,3,10500
+9,9,109,9,9,4,22000
+10,10,110,10,10,5,21000
+11,11,111,1,11,1,15000
+12,12,112,2,12,2,24000
+13,13,113,3,13,3,144000
+14,14,114,4,14,4,12800
+15,15,115,5,15,5,62500
+16,16,116,6,16,1,9500
+17,17,117,7,17,2,13000
+18,18,118,8,18,3,3600
+19,19,119,9,19,4,7200
+20,20,120,10,20,5,12500
+21,1,101,1,21,1,65000
+22,2,102,2,22,2,56000
+23,3,103,3,23,3,135000
+24,4,104,4,24,4,72000
+25,5,105,5,25,5,110000
+26,6,106,6,26,1,1800
+27,7,107,7,27,2,1800
+28,8,108,8,28,3,10500
+29,9,109,9,29,4,22000
+30,10,110,10,30,5,21000
+31,11,111,1,31,1,15000
+32,12,112,2,1,2,24000
+33,13,113,3,2,3,144000
+34,14,114,4,3,4,12800
+35,15,115,5,4,5,62500
+36,16,116,6,5,1,9500
+37,17,117,7,6,2,13000
+38,18,118,8,7,3,3600
+39,19,119,9,8,4,7200
+40,20,120,10,9,5,12500
+41,1,101,1,10,1,65000
+42,2,102,2,11,2,56000
+43,3,103,3,12,3,135000
+44,4,104,4,13,4,72000
+45,5,105,5,14,5,110000
+46,6,106,6,15,1,1800
+47,7,107,7,16,2,1800
+48,8,108,8,17,3,10500
+49,9,109,9,18,4,22000
+50,10,110,10,19,5,21000
+51,11,111,1,20,1,15000
+52,12,112,2,21,2,24000
+53,13,113,3,22,3,144000
+54,14,114,4,23,4,12800
+55,15,115,5,24,5,62500
+56,16,116,6,25,1,9500
+57,17,117,7,26,2,13000
+58,18,118,8,27,3,3600
+59,19,119,9,28,4,7200
+60,20,120,10,29,5,12500
+61,1,101,1,30,1,65000
+62,2,102,2,31,2,56000
+63,3,103,3,1,3,135000
+64,4,104,4,2,4,72000
+65,5,105,5,3,5,110000
+66,6,106,6,4,1,1800
+67,7,107,7,5,2,1800
+68,8,108,8,6,3,10500
+69,9,109,9,7,4,22000
+70,10,110,10,8,5,21000
+71,11,111,1,9,1,15000
+72,12,112,2,10,2,24000
+73,13,113,3,11,3,144000
+74,14,114,4,12,4,12800
+75,15,115,5,13,5,62500
+76,16,116,6,14,1,9500
+77,17,117,7,15,2,13000
+78,18,118,8,16,3,3600
+79,19,119,9,17,4,7200
+80,20,120,10,18,5,12500
+81,1,101,1,19,1,65000
+82,2,102,2,20,2,56000
+83,3,103,3,21,3,135000
+84,4,104,4,22,4,72000
+85,5,105,5,23,5,110000
+86,6,106,6,24,1,1800
+87,7,107,7,25,2,1800
+88,8,108,8,26,3,10500
+89,9,109,9,27,4,22000
+90,10,110,10,28,5,21000
+91,11,111,1,29,1,15000
+92,12,112,2,30,2,24000
+93,13,113,3,31,3,144000
+94,14,114,4,1,4,12800
+95,15,115,5,2,5,62500
+96,16,116,6,3,1,9500
+97,17,117,7,4,2,13000
+98,18,118,8,5,3,3600
+99,19,119,9,6,4,7200
+100,20,120,10,7,5,12500
+
+
+Business Requirements
+
+The Star Schema should support the following reports:
+
+Customer-wise Sales Report
+Product-wise Revenue Report
+Branch-wise Revenue Report
+State-wise Revenue Report
+Monthly Revenue Report
+Quarterly Revenue Report
+Top 10 Customers
+Top 10 Products
+Top 10 Performing Branches
+Category-wise Revenue
+Customer Purchase Trend
+Product Performance Dashboard
+Branch Performance Dashboard
+Regional Sales Analysis
+Sales Trend Analysis
+
+
+YOur Tasks
+--------------
+Phase-1: Analyze the Business Requirements
+----------
+Identify
+
+Business Process
+Business Event
+Reporting Requirements
+
+Phase-2: Identify Fact Table
+-----------
+Identify
+
+Fact Table Name
+Primary Key
+Foreign Keys
+Measures
+
+Phase-3: Identify Dimension Tables
+----------
+For every Dimension Table identify
+
+Dimension Name
+Primary Key
+Attributes
+
+Phase-4: Design the Star Schema
+----------
+Draw the Star Schema showing
+
+Fact Table
+Dimension Tables
+Primary Keys
+Foreign Keys
+One-to-Many Relationships
+
+Phase-5: Validate the Schema
+------------
+Explain how the schema supports
+
+Customer Reports
+Product Reports
+Branch Reports
+Monthly Reports
+Category Reports
+Revenue Reports
+
+Phase-6: Advantages
+-------------------
+Explain why Star Schema is suitable for
+
+OLAP
+BI Reporting
+Dashboards
+Data Warehouse
+
+
+Expected Output-1:
+------------------
+Business Process
+Retail Sales Analytics
+
+Expected Output-2:
+---------------------
+Business Event
+A customer purchases one or more products from a retail branch on a 
+specific date.
+
+Expected Output-3
+---------------------
+Fact Table
+| Fact Table | Description                                                 |
+| ---------- | ----------------------------------------------------------- |
+| FACT_SALES | Stores all sales transactions generated by retail branches. |
+
+Expected Output-4
+--------------------
+Fact Table Structure
+| Column Name  | Key / Measure |
+| ------------ | ------------- |
+| Sale_ID      | Primary Key   |
+| Customer_ID  | Foreign Key   |
+| Product_ID   | Foreign Key   |
+| Branch_ID    | Foreign Key   |
+| Date_ID      | Foreign Key   |
+| Quantity     | Measure       |
+| Total_Amount | Measure       |
+
+Expected Output-5
+--------------------
+Dimension Tables
+| Dimension Table | Description                 |
+| --------------- | --------------------------- |
+| DIM_CUSTOMER    | Stores customer information |
+| DIM_PRODUCT     | Stores product information  |
+| DIM_BRANCH      | Stores branch information   |
+| DIM_DATE        | Stores date information     |
+
+
+Expected Output-6
+------------------
+Customer Dimension
+| Attribute        |
+| ---------------- |
+| Customer_ID (PK) |
+| Customer_Name    |
+| City             |
+| State            |
+| Membership       |
+
+Expected Output-7
+-------------------
+Product Dimension
+Attribute
+Product_ID (PK)
+Product_Name
+Category
+Brand
+Price| Attribute       |
+| --------------- |
+| Product_ID (PK) |
+| Product_Name    |
+| Category        |
+| Brand           |
+| Price           |
+
+Expected Output-8
+------------------
+Branch Dimension
+| Attribute       |
+| --------------- |
+| Product_ID (PK) |
+| Product_Name    |
+| Category        |
+| Brand           |
+| Price           |
+
+
+Expected Output-9
+-----------------
+Date Dimension
+| Attribute    |
+| ------------ |
+| Date_ID (PK) |
+| Date         |
+| Day          |
+| Day_Name     |
+| Week_No      |
+| Month        |
+| Quarter      |
+| Year         |
+| Is_Weekend   |
+
+
+Expected Output-10
+------------------
+Measures
+| Measure      | Type     |
+| ------------ | -------- |
+| Quantity     | Additive |
+| Total_Amount | Additive |
+
+
+
+
+Expected Output-11
+------------------
+Grain
+One record in FACT_SALES represents the sale of one product purchased by one customer from one retail branch on one specific date.
+
+
+Expected Output-12
+-------------------
+Star Schema Relationships
+DIM_CUSTOMER (1) --------< FACT_SALES (M)
+
+DIM_PRODUCT  (1) --------< FACT_SALES (M)
+
+DIM_BRANCH   (1) --------< FACT_SALES (M)
+
+DIM_DATE     (1) --------< FACT_SALES (M)
+
+Expected Output-13
+------------------
+Star Schema Diagram
+                        DIM_CUSTOMER
+                       (Customer_ID)
+                             |
+                             |
+                             |
+DIM_PRODUCT ------------ FACT_SALES ------------ DIM_DATE
+(Product_ID)              (Sale_ID)             (Date_ID)
+                             |
+                             |
+                             |
+                        DIM_BRANCH
+                        (Branch_ID)
+
+
+Expected Output-14
+--------------------
+Star Schema Characteristics
+| Feature           | Description                  |
+| ----------------- | ---------------------------- |
+| Central Table     | FACT_SALES                   |
+| Dimension Tables  | 4                            |
+| Normalization     | No (Denormalized Dimensions) |
+| Query Performance | High                         |
+| Joins Required    | Minimum                      |
+| Best Suitable For | OLAP & Business Intelligence |
+
+
+
+Expected Output-15
+------------------
+Analytical Reports Supported
+| Report                        |
+| ----------------------------- |
+| Customer-wise Sales Report    |
+| Product-wise Revenue Report   |
+| Branch-wise Revenue Report    |
+| State-wise Revenue Report     |
+| Monthly Revenue Report        |
+| Quarterly Revenue Report      |
+| Top 10 Customers              |
+| Top 10 Products               |
+| Top 10 Branches               |
+| Category-wise Revenue         |
+| Customer Purchase Trend       |
+| Product Performance Dashboard |
+| Branch Performance Dashboard  |
+| Sales Trend Analysis          |
+
+Expected Output-16
+------------------
+Advantages of Star Schema
+• Simple and easy to understand.
+• Faster query execution due to fewer joins.
+• Optimized for OLAP operations.
+• Suitable for Business Intelligence dashboards.
+• Improves report generation performance.
+• Simplifies data analysis for business users.
+
+Expected Output-17
+--------------------
+Comparison with Operational Database
+| Operational Database   | Star Schema           |
+| ---------------------- | --------------------- |
+| Normalized             | Denormalized          |
+| OLTP                   | OLAP                  |
+| Frequent Updates       | Read Optimized        |
+| Transaction Processing | Analytical Reporting  |
+| Complex Joins          | Simple Joins          |
+| Day-to-Day Operations  | Business Intelligence |
+
+
+Expected Output-18
+-------------------
+Complete Star Schema Design
+                         +----------------------+
+                         |    DIM_CUSTOMER      |
+                         +----------------------+
+                         | Customer_ID (PK)     |
+                         | Customer_Name        |
+                         | City                 |
+                         | State                |
+                         | Membership           |
+                         +----------+-----------+
+                                    |
+                                    |
+                                    |
++----------------------+   +----------------------+   +----------------------+
+|    DIM_PRODUCT       |   |      FACT_SALES      |   |      DIM_DATE        |
++----------------------+   +----------------------+   +----------------------+
+| Product_ID (PK)      |---| Sale_ID (PK)         |---| Date_ID (PK)         |
+| Product_Name         |   | Customer_ID (FK)     |   | Date                 |
+| Category             |   | Product_ID (FK)      |   | Day                  |
+| Brand                |   | Branch_ID (FK)       |   | Day_Name             |
+| Price                |   | Date_ID (FK)         |   | Week_No              |
++----------------------+   | Quantity             |   | Month                |
+                           | Total_Amount         |   | Quarter              |
+                           +----------+-----------+   | Year                 |
+                                      |               | Is_Weekend           |
+                                      |               +----------------------+
+                                      |
+                                      |
+                           +----------------------+
+                           |     DIM_BRANCH       |
+                           +----------------------+
+                           | Branch_ID (PK)       |
+                           | Branch_Name          |
+                           | City                 |
+                           | State                |
+                           | Region               |
+                           | Manager_Name         |
+                           +----------------------+
+*/
