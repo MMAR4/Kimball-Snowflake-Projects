@@ -1,0 +1,6 @@
+food_id,name,price,category,availability
+1,Paneer Butter Masala,250,Main Course,Available
+2,Chicken Biryani,300,Main Course,Available
+3,Masala Dosa,120,Breakfast,Available
+4,Samosa,30,Snacks,Available
+5,Gulab Jamun,50,Dessert,Available
