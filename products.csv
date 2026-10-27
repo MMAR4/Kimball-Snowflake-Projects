@@ -1,0 +1,21 @@
+product_id,product_name,category,brand,price
+101,Laptop,Electronics,Dell,65000
+102,Smartphone,Electronics,Samsung,28000
+103,Tablet,Electronics,Apple,45000
+104,Monitor,Electronics,LG,18000
+105,Smart Watch,Electronics,Apple,22000
+106,Keyboard,Accessories,Logitech,1800
+107,Mouse,Accessories,HP,900
+108,Headphones,Accessories,Sony,3500
+109,Speaker,Accessories,JBL,5500
+110,Web Camera,Accessories,Logitech,4200
+111,Printer,Office Equipment,HP,15000
+112,Scanner,Office Equipment,Canon,12000
+113,Projector,Office Equipment,Epson,48000
+114,Router,Networking,TP-Link,3200
+115,Network Switch,Networking,Cisco,12500
+116,External SSD,Storage,Samsung,9500
+117,Hard Disk,Storage,Seagate,6500
+118,USB Pen Drive,Storage,SanDisk,1200
+119,Power Bank,Mobile Accessories,Mi,1800
+120,Wireless Charger,Mobile Accessories,Anker,2500
