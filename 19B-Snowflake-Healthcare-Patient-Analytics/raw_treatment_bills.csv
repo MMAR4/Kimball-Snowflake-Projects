@@ -1,0 +1,5 @@
+claim_id,encounter_id,patient_id,procedure_cost,insurance_discount_pct,copay_amount
+CLM-301,ENC-701,PAT-901,5000.00,0.10,200.00
+CLM-302,ENC-702,PAT-902,12000.00,0.15,500.00
+CLM-303,ENC-702,PAT-902,3500.00,0.00,100.00
+CLM-304,ENC-704,PAT-904,800.00,0.05,50.00

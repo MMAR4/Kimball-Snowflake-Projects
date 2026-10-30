@@ -1,0 +1,131 @@
+================================================================================
+PROJECT 19B: Healthcare Patient Journeys & Promotion Coverage Factless Models
+================================================================================
+Target Schedule: Week 3 — Day 11 (Topics M1–M5)
+Target Topics: Factless Fact Tables, Additive/Non-Additive Measures, Degenerate Dimensions, 
+               Accumulating Snapshots
+Difficulty: Medium
+Environment: SQL / Snowflake SQL
+
+--------------------------------------------------------------------------------
+1. PROBLEM STATEMENT & BUSINESS SCENARIO
+--------------------------------------------------------------------------------
+A hospital network manages patient admission lifecycles, treatment costs, and medical 
+staff shift coverage. 
+
+You must design:
+1. Factless Fact Table (`FACTLESS_STAFF_COVERAGE`) to track doctor-on-duty assignments.
+2. Accumulating Snapshot Table (`FACT_PATIENT_ADMISSION_LIFECYCLE`) for admission milestones.
+3. Transaction Fact Table (`FACT_TREATMENT_BILLING`) with degenerate claim IDs and non-additive measures.
+
+--------------------------------------------------------------------------------
+2. INPUT DATASETS (CSV TABULAR FORMAT)
+--------------------------------------------------------------------------------
+
+Doctor On-Duty Roster Log (`raw_doctor_roster.csv`):
+----------------------------------------------------
+shift_date,doctor_id,department_id,shift_type
+2026-08-20,DOC-01,DEP-10,MORNING
+2026-08-20,DOC-02,DEP-10,NIGHT
+2026-08-20,DOC-03,DEP-20,MORNING
+2026-08-21,DOC-01,DEP-10,NIGHT
+2026-08-21,DOC-04,DEP-30,MORNING
+2026-08-21,DOC-02,DEP-10,MORNING
+
+Patient Journey Lifecycles (`raw_patient_journey.csv`):
+-------------------------------------------------------
+encounter_id,patient_id,triage_date,admission_date,discharge_date
+ENC-701,PAT-901,2026-08-15,2026-08-15,2026-08-18
+ENC-702,PAT-902,2026-08-16,2026-08-17,2026-08-22
+ENC-703,PAT-903,2026-08-18,2026-08-18,NULL
+ENC-704,PAT-904,2026-08-19,2026-08-20,2026-08-21
+ENC-705,PAT-905,2026-08-20,NULL,NULL
+
+Medical Treatment Billing Events (`raw_treatment_bills.csv`):
+--------------------------------------------------------------
+claim_id,encounter_id,patient_id,procedure_cost,insurance_discount_pct,copay_amount
+CLM-301,ENC-701,PAT-901,5000.00,0.10,200.00
+CLM-302,ENC-702,PAT-902,12000.00,0.15,500.00
+CLM-303,ENC-702,PAT-902,3500.00,0.00,100.00
+CLM-304,ENC-704,PAT-904,800.00,0.05,50.00
+
+--------------------------------------------------------------------------------
+3. STUDENT TASKS & EXPECTED OUTPUTS
+--------------------------------------------------------------------------------
+
+TASK 1: Factless Coverage Table Setup
+- Create `FACTLESS_STAFF_COVERAGE` containing `SHIFT_DATE`, `DOCTOR_ID`, `DEPARTMENT_ID`, `SHIFT_TYPE`.
+
+EXPECTED OUTPUT (SELECT COUNT(*) FROM FACTLESS_STAFF_COVERAGE):
++--------------------+
+| TOTAL_ROSTER_ROWS  |
++--------------------+
+| 6                  |
++--------------------+
+
+
+TASK 2: Factless Coverage Analysis Query
+- Write a query to find departments that had ZERO night shifts assigned on `2026-08-20`.
+
+EXPECTED OUTPUT:
++---------------+-------------------+
+| DEPARTMENT_ID | NIGHT_SHIFT_COUNT |
++---------------+-------------------+
+| DEP-20        | 0                 |
++---------------+-------------------+
+
+
+TASK 3: Patient Lifecycle Accumulating Snapshot Table
+- Create `FACT_PATIENT_ADMISSION_LIFECYCLE` calculating:
+  * `TRIAGE_TO_ADMIT_DAYS` (`admission_date - triage_date`)
+  * `LENGTH_OF_STAY_DAYS` (`discharge_date - admission_date`)
+
+EXPECTED OUTPUT:
++--------------+------------+----------------------+--------------------+
+| ENCOUNTER_ID | PATIENT_ID | TRIAGE_TO_ADMIT_DAYS | LENGTH_OF_STAY_DAYS|
++--------------+------------+----------------------+--------------------+
+| ENC-701      | PAT-901    | 0                    | 3                  |
+| ENC-702      | PAT-902    | 1                    | 5                  |
+| ENC-704      | PAT-904    | 1                    | 1                  |
++--------------+------------+----------------------+--------------------+
+
+
+TASK 4: Categorize Additive vs Non-Additive Billing Measures
+- Create `FACT_TREATMENT_BILLING` with `CLAIM_ID` as a Degenerate Dimension.
+- Compute `NET_CHARGE` = `(procedure_cost * (1 - insurance_discount_pct)) - copay_amount`.
+- Note: `insurance_discount_pct` is Non-Additive; `procedure_cost` and `NET_CHARGE` are Additive.
+
+EXPECTED OUTPUT:
++----------+--------------+----------------+--------------+------------+
+| CLAIM_ID | ENCOUNTER_ID | PROCEDURE_COST | COPAY_AMOUNT | NET_CHARGE |
++----------+--------------+----------------+--------------+------------+
+| CLM-301  | ENC-701      | 5000.00        | 200.00       | 4300.00    |
+| CLM-302  | ENC-702      | 12000.00       | 500.00       | 9700.00    |
+| CLM-303  | ENC-702      | 3500.00        | 100.00       | 3400.00    |
+| CLM-304  | ENC-704      | 800.00         | 50.00        | 710.00     |
++----------+--------------+----------------+--------------+------------+
+
+
+TASK 5: Patient Billing Aggregation
+- Query total net charges and average procedure cost per encounter.
+
+EXPECTED OUTPUT:
++--------------+-------------------+-------------------+
+| ENCOUNTER_ID | TOTAL_NET_CHARGES | AVG_PROCEDURE_COST|
++--------------+-------------------+-------------------+
+| ENC-701      | 4300.00           | 5000.00           |
+| ENC-702      | 13100.00          | 7750.00           |
+| ENC-704      | 710.00            | 800.00            |
++--------------+-------------------+-------------------+
+
+
+TASK 6: Audit Untreated / Non-Billed Encounters
+- Identify encounters in `FACT_PATIENT_ADMISSION_LIFECYCLE` that generated ZERO claims in `FACT_TREATMENT_BILLING`.
+
+EXPECTED OUTPUT:
++--------------+------------+------------------+
+| ENCOUNTER_ID | PATIENT_ID | UNBILLED_STATUS  |
++--------------+------------+------------------+
+| ENC-703      | PAT-903    | NO_CLAIMS_ISSUED |
+| ENC-705      | PAT-905    | NO_CLAIMS_ISSUED |
++--------------+------------+------------------+
